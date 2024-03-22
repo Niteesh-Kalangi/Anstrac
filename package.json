@@ -1,0 +1,12 @@
+{
+  "name": "anstrac-chrome-extension",
+  "version": "1.0.7",
+  "description": "Chrome extension",
+  "author": "Niteesh Kalangi",
+  "devDependencies": {
+    "eslint": "^7.17.0"
+  },
+  "scripts": {
+    "create-zip": "zip -r dist/$npm_package_name-$npm_package_version.zip src"
+  }
+}

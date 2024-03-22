@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Anstrac",
+  "description": "Extract text from any portion of the screen and input into GPT.",
+  "version": "2.1.0",
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_security_policy": {
+		"extension_pages":  "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+	},
+  "default_locale": "en",
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "action": {
+    "default_title": "Capture Text",
+    "default_icon": {
+      "16": "DisplayIcons/16.png",  
+      "48": "DisplayIcons/48.png",  
+      "128": "DisplayIcons/128.png" 
+    }
+  },
+  "commands": {
+    "take-screenshot": {
+      "suggested_key": {
+        "default": "Ctrl+E",
+        "mac": "MacCtrl+E"
+      },
+      "description": "Take Screenshot"
+    }
+  },
+  "options_page": "options.html",
+  "minimum_chrome_version": "114",
+  "permissions": ["contextMenus", "storage", "sidePanel", "downloads", "scripting", "tabs", "notifications"]
+}

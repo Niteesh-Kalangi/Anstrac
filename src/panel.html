@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+//================================================
+/*
+
+Note Sidebar
+Simple note sidebar which can be used to write a note, record thoughts, to-do list, meeting notes, etc.
+Copyright (C) 2024 Stefan vd
+www.stefanvd.net
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+
+To view a copy of this license, visit http://creativecommons.org/licenses/GPL/2.0/
+
+*/
+//================================================
+-->
+
+<title data-i18n="name"></title>
+<link rel="stylesheet" type="text/css" href="styles/panel.css">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#232323" media="(prefers-color-scheme: dark)">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="ocr-instruction">
+        <h3>Press Control+E to capture text (OCR)</h1>
+    </div>
+	<div id="header-container">
+        <div class="dropdown">
+            <button id="model-dropdown-btn" title="Change model">
+                <i id="model-dropdown-btn-icon" class="fa fa-robot"></i>
+                <span id="model-dropdown-btn-text"></span>
+            </button>
+            <div id="model-dropdown-content">
+                <a id="gpt-3.5-turbo-1106" class="model-dropdown-btn">GPT-3.5-Turbo (fastest)</a>
+                <a id="gpt-4" class="model-dropdown-btn">GPT-4 (cleverest)</a>
+            </div>
+        </div>
+        <div id="action-btn-container">
+            <button id="clear-chat-btn" title="Clear chat">
+                <i class="fa fa-trash"></i>
+            </button>
+            <button id="settings-btn" title="Settings">
+                <i class="fa fa-cog"></i>
+            </button>
+        </div>
+    </div>
+    <div id="chat-container">
+        <div id="chat-messages"></div>
+    </div>
+    <div class="input-container">
+        <input type="text" id="user-input" placeholder="Type your message...">
+        <button id="send-btn" title="Send message">
+            <i class="fa fa-paper-plane"></i>
+        </button>
+    </div>
+
+    <script src="scripts/panel.js"></script>
+</body>
+</html>
