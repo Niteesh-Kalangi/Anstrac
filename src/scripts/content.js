@@ -235,7 +235,8 @@ async function PerformOCR(worker_index,img_url){
     GLOBALS.all_images_ocr.push(ocr_result)
 }
 
-function FindHighestConfidenceResult(img){
+//changed to async. wasn't originally
+async function FindHighestConfidenceResult(img){
     let highest_confidence = 0
     let highest_confidence_result
 
@@ -274,12 +275,13 @@ function FindHighestConfidenceResult(img){
 function EditImage(canvas,img_info){
     // Performing OCR on four different images and utilizing the result with the highest confidence level.
     let context, canvas_copy, worker_index
+  
     for (let i = 0; i < 4; i++){
         switch (i){
 
             case 0:
                 worker_index = i
-                context = canvas.getContext("2d")
+                context = canvas.getContext("2d", {willReadFrequently : true})
                 context.drawImage(...img_info)
                 // DonwloadImg(canvas.toDataURL())
                 PerformOCR(worker_index,canvas.toDataURL())
@@ -288,7 +290,7 @@ function EditImage(canvas,img_info){
             case 1:
                 worker_index = i
                 canvas_copy = canvas.cloneNode(true)
-                context = canvas_copy.getContext("2d")
+                context = canvas_copy.getContext("2d", {willReadFrequently : true})
                 context.drawImage(...img_info)
                 IncreaseContrastCode(context,0.1)
                 // DonwloadImg(canvas_copy.toDataURL())
@@ -298,7 +300,7 @@ function EditImage(canvas,img_info){
             case 2:
                 worker_index = i
                 canvas_copy = canvas.cloneNode(true)
-                context = canvas_copy.getContext("2d")
+                context = canvas_copy.getContext("2d", {willReadFrequently : true})
                 context.drawImage(...img_info)
                 IncreaseBrightnessCode(context,40)
                 // DonwloadImg(canvas_copy.toDataURL())
@@ -308,7 +310,7 @@ function EditImage(canvas,img_info){
             case 3:
                 worker_index = i
                 canvas_copy = canvas.cloneNode(true)
-                context = canvas_copy.getContext("2d")
+                context = canvas_copy.getContext("2d", {willReadFrequently : true})
                 context.drawImage(...img_info)
                 IncreaseBrightnessCode(context,40)
                 IncreaseContrastCode(context,0.1)
