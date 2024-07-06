@@ -192,7 +192,7 @@ var notification_ids = []
 
 // Chrome APIs
 
-chrome.action.onClicked.addListener(async function(tab){
+/*chrome.action.onClicked.addListener(async function(tab){
 
     let injected_flag = await CheckIfScriptAlreadyInjected(tab.id)
 
@@ -203,7 +203,7 @@ chrome.action.onClicked.addListener(async function(tab){
         await InjectScripts(tab.id)
     }
     
-})
+})*/
 
 chrome.commands.onCommand.addListener(async function(command, tab){
     //console.log("fakap")
@@ -237,6 +237,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse){
             OCRResult.img = message.img
             OCRResult.confidence = message.confidence
             OCRResult.text = message.text
+            console.log(OCRResult.confidence);
             CreateOCRResultNotification(message.confidence)
             break
 
@@ -268,18 +269,43 @@ function GetViewportScreenshot(){
 }
 
 
-async function InjectScripts(tabId){
+/*async function InjectScripts(tabId){
     let css_files = ["styles/content.css","packages/jquery.Jcrop.min.css"]
     await chrome.scripting.insertCSS({files: css_files, target: {tabId: tabId}})
 
     let js_files = ["packages/tesseract.min.js","packages/jquery.min.js","packages/jquery.Jcrop.min.js","scripts/content.js"]
     await chrome.scripting.executeScript({files: js_files, target: {tabId: tabId}})
+}*/
+
+async function InjectScripts(tabId) {
+    let css_files = ["styles/content.css", "packages/jquery.Jcrop.min.css"];
+    try {
+        await chrome.scripting.insertCSS({files: css_files, target: {tabId: tabId}});
+    } catch (error) {
+        //console.error("Error injecting CSS:", error)
+        CreateTextNotification("Couldn't start script")
+    }
+
+    let js_files = ["packages/tesseract.min.js", "packages/jquery.min.js", "packages/jquery.Jcrop.min.js", "scripts/content.js"];
+    try {
+        await chrome.scripting.executeScript({files: js_files, target: {tabId: tabId}});
+    } catch (error) {
+        console.error("Error injecting JavaScript:", error)
+        CreateTextNotification("Couldn't start script")
+    }
 }
 
+let isContentScriptReady = false;
 
-function CheckIfScriptAlreadyInjected(tabId){
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+    if (message.ready) {
+        isContentScriptReady = true;
+    }
+});
+
+/*function CheckIfScriptAlreadyInjected(tabId){
     return new Promise(function(resolve,reject){
-
+        
         chrome.tabs.sendMessage(tabId,{type:"init"}, function(response){
             
             if (response){  // Script already injected
@@ -289,9 +315,46 @@ function CheckIfScriptAlreadyInjected(tabId){
             }
         })
 
+        
+
     })
 
 }
+*/
+
+/*function CheckIfScriptAlreadyInjected(tabId) {
+    return new Promise(function(resolve, reject) {
+        chrome.tabs.sendMessage(tabId, {type: "init"}, function(response) {
+            if (chrome.runtime.lastError) {
+                console.error(chrome.runtime.lastError.message);
+                resolve(false); // Script not injected or not ready
+            } else if (response) {
+                resolve(true); // Script already injected
+            } else {
+                resolve(false); // Script not injected
+            }
+        });
+    });
+}*/
+
+async function CheckIfScriptAlreadyInjected(tabId) {
+    try {
+        const response = await chrome.tabs.sendMessage(tabId, {type: "init"});
+        // If the response is received, it means the script is already injected
+        return true;
+    } catch (error) {
+        // If there's an error (e.g., the receiving end does not exist), it means the script is not injected
+        if (error.message === "Could not establish connection. Receiving end does not exist.") {
+            return false;
+        } else {
+            // Handle other errors
+            console.error("Error checking if script is already injected:", error);
+            throw error; // Rethrow the error if it's not the expected one
+        }
+    }
+}
+
+
 
 
 // Chrome Notifications
@@ -340,7 +403,7 @@ Text Copied to Clipboard`,
         buttons: [
             {title: "Compare Side by Side"}
         ],
-        requireInteraction: true
+        requireInteraction: false
       },function(id){
             notification_ids.push(id)
       })

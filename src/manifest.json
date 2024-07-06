@@ -38,7 +38,16 @@
       "description": "Take Screenshot"
     }
   },
+  "content_scripts": [
+    {
+      "world": "MAIN",
+      "all_frames": true,
+      "matches": ["<all_urls>"],
+      "js": ["packages/ocrad.js"]
+    }
+ ],
   "options_page": "options.html",
   "minimum_chrome_version": "114",
-  "permissions": ["contextMenus", "storage", "sidePanel", "downloads", "scripting", "tabs", "notifications"]
+  "permissions": ["contextMenus", "storage", "sidePanel", "downloads", "scripting", "tabs", "notifications", "activeTab", "clipboardWrite",
+  "clipboardRead"]
 }

@@ -8,5 +8,15 @@
   },
   "scripts": {
     "create-zip": "zip -r dist/$npm_package_name-$npm_package_version.zip src"
+  },
+  "dependencies": {
+    "events": "^1.0.2",
+    "flux": "^2.0.3",
+    "jcrop": "0.0.1",
+    "jquery": "^2.1.4",
+    "keymirror": "^0.1.1",
+    "object-assign": "^3.0.0",
+    "ocrad.js": "0.0.1",
+    "react": "^0.13.3"
   }
 }

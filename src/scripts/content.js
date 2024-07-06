@@ -1,4 +1,5 @@
 
+
 var FLAGS = {
     jcrop : null,
     running : false,
@@ -10,7 +11,7 @@ var GLOBALS = {
     all_workers : [],
     all_promises : [], // used to store promises when 1- Init workers 2- When performing OCR
     all_images_ocr : [],// used to store the OCR results
-    total_reattempts : 2,
+    total_reattempts : 10,
     loading_workers_percentage_completion : 0
 }
 
@@ -21,10 +22,33 @@ var UI = {
     percentage_completion_text : null,
     loading_bar_title : null,
 }
+// Send a "ready" message to the background script
+chrome.runtime.sendMessage({ready: true});
 
-InitTesseract()
+function ping() {
+    chrome.runtime.sendMessage('ping', response => {
+       if(chrome.runtime.lastError) {
+         setTimeout(ping, 1000); // Retry after 1 second if the receiving end is not ready
+       } else {
+         // Do whatever you want, background script is ready now
+       }
+    });
+   }
+   
+   ping();
+   
+
+console.log("guiz1")
+
+try{
+    InitTesseract()
+} catch (error) {
+    console.error(error)
+    CreateTextNotification("Couldn't start script")
+}
 
 
+console.log("guiz")
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
     switch (message.type) {
@@ -33,13 +57,15 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
             sendResponse("recieved");
 
             if (FLAGS.site_not_supported){
-                CreateTextNotification("Site Not Supported :( ")
+                console.log("not supported")
+                CreateTextNotification("Site Not Supported :(")
                 return
             }
 
-            if (!FLAGS.workers_init){ //Dont do anything till the workers initialize
+            if (!FLAGS.workers_init){ 
                 return
             }
+            
 
             if (FLAGS.jcrop){  // Remove selection tool if user clicks the icon a second time
                 FLAGS.jcrop.destroy()
@@ -174,8 +200,6 @@ function GetViewportScreenshot(){
     })
 
 }
- 
-
 
 // Tesseract
 
@@ -194,9 +218,12 @@ async function InitTesseract(){
             main()
             return
         } catch (error) {
+            console.log(error)
+            console.log(current_attempt)
             UpdateLoadWorkersCompletionUIPercentage("0%")
             GLOBALS.loading_workers_percentage_completion = 0
-            // setTimeout(function(){UpdateLoadWorkersCompletionUITitle("Re-attempting")},1000)
+            //uncommented next line
+            setTimeout(function(){UpdateLoadWorkersCompletionUITitle("Re-attempting")},1000)
             GLOBALS.all_promises = []
             GLOBALS.all_workers = []
             current_attempt++
@@ -205,18 +232,27 @@ async function InitTesseract(){
     }
     FLAGS.site_not_supported = true
     HideLoadingBarWindow()
-    CreateTextNotification("Site Not Supported :( ")
+    //switchOcrad()
+    CreateTextNotification("Site Not Supported :(")
     // setTimeout(function(){HideLoadingBarWindow()},2000)
     // setTimeout(function(){CreateTextNotification("Site Not Supported :( ")},2500)
 
+}
+async function switchOcrad() {
+    FLAGS.site_not_supported = true
+    HideLoadingBarWindow()
 }
 
 async function CreateWorkers(){
     let worker
     for (let i = 0; i < 4; i++){
+        console.log("trying")
         worker = await Tesseract.createWorker()
+        console.log("trying2")
         GLOBALS.all_workers.push(worker)
+        console.log("trying3")
         let workerPromise = InitWorker(worker)
+        console.log("trying4")
         GLOBALS.all_promises.push(workerPromise)
     }
 }
@@ -229,10 +265,19 @@ async function InitWorker(worker){
 }
 
 async function PerformOCR(worker_index,img_url){
+    
     let ocr_promise = GLOBALS.all_workers[worker_index].recognize(img_url)
     GLOBALS.all_promises.push(ocr_promise)
     let ocr_result = await ocr_promise
     GLOBALS.all_images_ocr.push(ocr_result)
+    
+    // else {
+    //     let ocr_promise = OCRAD(img_url)
+    //     GLOBALS.all_promises.push(ocr_promise)
+    //     let ocr_result = await ocr_promise
+    //     GLOBALS.all_images_ocr.push(ocr_result)
+    // }
+    
 }
 
 //changed to async. wasn't originally
@@ -264,9 +309,26 @@ async function FindHighestConfidenceResult(img){
     CreateOCRResultNotification(img,highest_confidence,highest_confidence_result.data.text)
     GLOBALS.all_images_ocr = []
 
-    navigator.clipboard.writeText(highest_confidence_result.data.text)
+    copyToClipboard(highest_confidence_result.data.text)
+    //navigator.clipboard.writeText(highest_confidence_result.data.text)
 
 }
+function copyToClipboard(text) {
+    if (document.visibilityState === 'visible' && document.hasFocus()) {
+       navigator.clipboard.writeText(text)
+         .then(() => {
+           console.log('Text copied to clipboard successfully.')
+         })
+         .catch(err => {
+           console.error('Failed to copy text: ', err)
+           CreateTextNotification("Failed to copy text")
+         });
+    } else {
+       console.error('Document is not focused or not visible.');
+       CreateTextNotification("Document is not focused or not visible.")
+       // Consider adding logic to bring focus or visibility to the document
+    }
+   }
 
 
 // Img Manipulation
@@ -389,7 +451,8 @@ function CreateTextNotification(msg){
     chrome.runtime.sendMessage({type:"create_text_noti",msg:msg})
 }
 
-async function CreateOCRResultNotification(img,confidence,text){
+//removed async
+function CreateOCRResultNotification(img,confidence,text){
     chrome.runtime.sendMessage({
         type:"create_ocr_result_noti",
         confidence: confidence,
